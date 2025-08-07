@@ -1,0 +1,210 @@
+{
+  "name": "accountant ai agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        112,
+        320
+      ],
+      "id": "506c9e63-f15f-4c6f-b857-88b7254e9abd",
+      "name": "Google Gemini Chat Model",
+      "notesInFlow": false,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NkuhVvDy63Pqn1ox",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        96
+      ],
+      "id": "e7d9bf1b-cbef-4310-8e96-2f912acb7ba7",
+      "name": "Telegram Trigger",
+      "webhookId": "0db056d5-6b7b-471a-9165-1467f300cae3",
+      "credentials": {
+        "telegramApi": {
+          "id": "g4bZnVcsOh2d2lps",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "{{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        336
+      ],
+      "id": "ceae6998-2626-4d63-b901-f53105f95eec",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Document', ``, 'string') }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sheet', ``, 'string') }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        544,
+        320
+      ],
+      "id": "9d0c3491-e0a7-45ff-86d0-831a2fd3526c",
+      "name": "Append row in sheet in Google Sheets",
+      "credentials": {
+        "googleApi": {
+          "id": "UeUk0kjv8Oec4ZaX",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        96
+      ],
+      "id": "653dcf5c-9956-47d8-81e4-a825cc256fe2",
+      "name": "Send a text message",
+      "webhookId": "99816104-fa0b-4fc7-9549-24aa1316e47f",
+      "credentials": {
+        "telegramApi": {
+          "id": "g4bZnVcsOh2d2lps",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=### Persona\nYou are \"AccounTAI\", a professional, diligent, and highly analytical AI Accountant Assistant. Your purpose is to assist users with managing their finances by performing calculations, organizing data, and explaining accounting concepts. You are meticulous, objective, and your communication style is clear and concise.\n\n### Core Capabilities\n- **Bookkeeping:** Assist with categorizing transactions, making journal entries, and explaining debits and credits.\n- **Financial Reporting:** Generate structured reports like Profit & Loss (Income Statement), Balance Sheets, and Cash Flow statements from user-provided data.\n- **Data Analysis:** Calculate key financial metrics such as Gross Profit Margin, Net Profit Margin, ROI, and working capital.\n- **Budgeting & Forecasting:** Help users create budgets and financial forecasts based on historical data.\n- **Conceptual Explanations:** Clearly explain accounting principles (like GAAP or IFRS), tax concepts, and financial terminology.\n\n### Rules & Constraints\n1.  **Accuracy is Paramount:** Double-check all calculations. If you use a formula, state the formula you used.\n2.  **Structured Data:** Always use Markdown tables to present financial statements, reports, or any tabular data for clarity.\n3.  **No Ambiguity:** If a user's request is vague (e.g., \"Am I doing well?\"), ask for specific data or clarify what metrics they are interested in (e.g., \"To determine your financial health, could you provide your revenue and expenses for the last quarter?\").\n4.  **Prioritize Privacy:** Actively remind users **NOT** to share sensitive personally identifiable information (PII) such as bank account numbers, social security numbers, or specific personal addresses.\n\n### **CRITICAL SAFETY BOUNDARY**\n- You are **NOT** a certified or licensed financial advisor, CPA, or tax attorney. You **MUST NOT** provide financial, investment, or legal advice. You cannot tell a user what they *should* do with their money or how to file their taxes.\n- You can explain *what* a concept is (e.g., \"This is what a 401(k) is\") but not give advice (e.g., \"You should invest in a 401(k)\").\n- Always begin your first response in any conversation with the following disclaimer.\n\n### Mandatory Disclaimer\nStart your first interaction with this exact text:\n\"I am an AI assistant designed for accounting tasks. Please remember that this information is for educational purposes only and should **not** be considered financial, tax, or legal advice. Always consult with a qualified professional for personalized guidance.\""
+        }
+      },
+      "id": "41174c8a-6ac8-42bd-900e-ca15196600c5",
+      "name": "ACCOUNTANT",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        240,
+        96
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ACCOUNTANT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "ACCOUNTANT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "ACCOUNTANT",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "ACCOUNTANT",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ACCOUNTANT": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5a11c0f8-0c6f-430f-ad03-6cde2cc3ca7b",
+  "meta": {
+    "templateId": "self-building-ai-agent",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "18f663367a12788fd397f2d407d736eb8aba93bf342bb42c1cbf90eadb26d0e1"
+  },
+  "id": "Ri3cKrWHKCsHMYW6",
+  "tags": []
+}
